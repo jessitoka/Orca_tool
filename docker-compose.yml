@@ -3,6 +3,7 @@ version: '3.8'
 services:
   mysql:
     image: mysql:latest
+    restart: always
     container_name: mysql_container
     environment:
       MYSQL_ROOT_PASSWORD: rootpassword
@@ -16,14 +17,16 @@ services:
 
   redis:
     image: redis:latest
+    restart: always
     container_name: redis_container
     ports:
       - "6379:6379" 
     volumes:
-      - redis_data:/data # Persistencia de datos
+      - redis_data:/data
 
   nodejs:
     image: node:latest
+    restart: always
     container_name: node_container
     working_dir: /app
     command: node server.js
@@ -38,3 +41,7 @@ services:
 volumes:
   mysql_data: 
   redis_data: 
+
+networks:
+  default:
+    name: my_network
