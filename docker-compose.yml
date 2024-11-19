@@ -1,47 +1,45 @@
-version: '3.8'
+services:   #Dentro de este se definen los servicios que se vn a ejecutar... mysql, redis y nodejs
+  mysql:   #este sera el contenedor destinado a mysql para la base de datos
+    image: mysql:latest   #Desde el docker hub descarga la ultima versión oficial de la imagen de mysql 
+    restart: always   #este hace que pueda haber reestablecimiento automaticamente sin importar la razon por la que se cerró
+    container_name: mysql_container   #Nombre del contenedor según pues lo que contiene para que no haya confusión
+    environment:   #Variables de entorno que sirven en la configuración y uso del mismo mysql
+      MYSQL_ROOT_PASSWORD: rootpassword  #contraseña del usuario que es predeterminado root
+      MYSQL_DATABASE: exampledb   #nombre ya como tal de la base de datos que se usara
+      MYSQL_USER: exampleuser   #Nombre de un usuario extra que se incluyee a la bd
+      MYSQL_PASSWORD: examplepass   #Asi como se asigno contraseña a root, el usuario nuevo tambien se la asigna contraseña aqui.
+    ports:   #En esta parte se mencionan a los puertos que se usaran en el contenedor y el host.
+      - "3307:3306"   #Aqui el puerto 3306 trabaja del contenedor al host con el puerto 3307, ambos en conjunto me sirven para acceder a la bd. No use el 3306 en ambos ya que el puerto de mi maquina esta ocupado en otros servicios. 
+    volumes:   #El volumen quue se usara para el tema de persistencia de datos
+      - mysql_data:/var/lib/mysql    #El volumen es llevao a la carpeta donde se encuentra mysql, dirección alli mismo indicada en donde se guardaran ls datos.
 
-services:
-  mysql:
-    image: mysql:latest
-    restart: always
-    container_name: mysql_container
-    environment:
-      MYSQL_ROOT_PASSWORD: rootpassword
-      MYSQL_DATABASE: exampledb
-      MYSQL_USER: exampleuser
-      MYSQL_PASSWORD: examplepass
-    ports:
-      - "3307:3306" 
-    volumes:
-      - mysql_data:/var/lib/mysql 
+  redis:   #este sera el contenedor destinado a redis
+    image: redis:latest    #Desde el docker hub descarga la ultima versión oficial de la imagen de Redis
+    restart: always    #este hace que pueda haber reestablecimiento automaticamente sin importar la razon por la que se cerró
+    container_name: redis_container    #Nombre del contenedor según pues lo que contiene para que no haya confusión
+    ports:   #En esta parte se mencionan a los puertos que se usaran en el contenedor
+      - "6379:6379"    #Este es el puerto predeterminado de Redis
+    volumes:   #El volumen que se usara para el tema de persistencia de datos
+      - redis_data:/data    #El volumen es llevado a /data que se encuentra en el contenedr, alli se guardaran los datos.
 
-  redis:
-    image: redis:latest
-    restart: always
-    container_name: redis_container
-    ports:
-      - "6379:6379" 
-    volumes:
-      - redis_data:/data
-
-  nodejs:
-    image: node:latest
-    restart: always
-    container_name: node_container
-    working_dir: /app
-    command: node server.js
-    ports:
-      - "3000:3000" 
-    volumes:
-      - ./node-app:/app 
-    depends_on:
+  nodejs:   #este sera el contenedor destinado a nodejs
+    image: node:latest    #Desde el docker hub descarga la ultima versión oficial de la imagen de Node.js
+    restart: always   #este hace que pueda haber reestablecimiento automaticamente sin importar la razon por la que se cerró
+    container_name: node_container   #Nombre del contenedor según lo que contiene para que no haya confusión
+    working_dir: /app   #Hace que el contenedor trabaje en /app cuando inicia
+    command: server.js   #Necesita del archivo server.js para funcionar al iniciarse
+    ports:   #En esta parte se mencionan a los puertos que se usaran en el contenedor
+      - "3000:3000"    #Este es el puerto para Node.js, desde el, cuando los servicios esten funcionando se podra acceder localmente 
+    volumes:   #El volumen que se usara para el tema de persistencia de datos
+      - ./app:/app   #Los cambbios que haga en los archivos localmente podran verse en el contenedor
+    depends_on:   #el contenedor de nodejs necesita entonces de los otros servicios anteriores:
       - mysql
       - redis
 
-volumes:
-  mysql_data: 
-  redis_data: 
+volumes:   #Aqui se declaran los volumenes usados por los servicios, para la perssitencia de datos
+  mysql_data:   #volumen usado en el servicio de mysql
+  redis_data:   #volumen usado en el servicio de redis
 
-networks:
-  default:
-    name: my_network
+networks:   #como son varios contenedores se hace uso de la red para que se conecten
+  default:   #Todos los servicios estan conectados a una red llamada my_network
+    name: my_network   #Nombre de la red
